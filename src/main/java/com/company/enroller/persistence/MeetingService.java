@@ -22,6 +22,35 @@ public class MeetingService {
 		Query query = connector.getSession().createQuery(hql);
 		return query.list();
 	}
-	
+
+	public Meeting findById(long id) {
+		return (Meeting) connector.getSession().get(Meeting.class, id);
+	}
+
+	public void delete(Meeting meeting) {
+		Transaction transaction = connector.getSession().beginTransaction();
+		connector.getSession().delete(meeting);
+		transaction.commit();
+	}
+
+	public void add(Meeting meeting) {
+		Transaction transaction = connector.getSession().beginTransaction();
+		connector.getSession().save(meeting);
+		transaction.commit();
+	}
+
+	public void update(Meeting meeting) {
+		Transaction transaction = connector.getSession().beginTransaction();
+		connector.getSession().merge(meeting);
+		transaction.commit();
+	}
+
+	public boolean alreadyExist(Meeting meeting) {
+		String hql = "FROM Meeting WHERE title=:title AND date=:date";
+		Query query = connector.getSession().createQuery(hql);
+		Collection resultList = query.setParameter("title", meeting.getTitle()).setParameter("date", meeting.getDate())
+				.list();
+		return query.list().size() != 0;
+	}
 
 }

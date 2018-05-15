@@ -34,12 +34,9 @@ public class Meeting {
 	@Column
 	private String date;
 
-	@JsonIgnore
-	@ManyToMany(cascade = { CascadeType.ALL })
-	@JoinTable(name = "meeting_participant", joinColumns = { @JoinColumn(name = "meeting_id") }, inverseJoinColumns = {
-			@JoinColumn(name = "participant_login") })
+	@ManyToMany(mappedBy = "meetings")
 	Set<Participant> participants = new HashSet<>();
-
+	
 	public long getId() {
 		return id;
 	}
