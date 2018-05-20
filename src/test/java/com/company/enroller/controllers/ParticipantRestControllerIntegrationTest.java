@@ -3,12 +3,7 @@ package com.company.enroller.controllers;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,29 +12,20 @@ import java.util.Collection;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.company.enroller.model.Participant;
-import com.company.enroller.persistence.MeetingService;
-import com.company.enroller.persistence.ParticipantService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(SpringRunner.class)
-@WebMvcTest(ParticipantRestController.class)
-public class ParticipantRestControllerTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(MyApp.class)
+@WebIntegrationTest
+public class ParticipantRestControllerIntegrationTest {
 
 	@Autowired
 	private MockMvc mvc;
 
-	@MockBean
-	private MeetingService meetingService;
-
-	@MockBean
-	private ParticipantService participantService;
 
 	@Test
 	public void getParticipants() throws Exception {
@@ -48,8 +34,7 @@ public class ParticipantRestControllerTest {
 		participant.setPassword("testpassword");
 
 		Collection<Participant> allParticipants = singletonList(participant);
-		given(participantService.getAll()).willReturn(allParticipants);
-
+	
 		mvc.perform(get("/participants").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				.andExpect(jsonPath("$", hasSize(1))).andExpect(jsonPath("$[0].login", is(participant.getLogin())));
 	}
@@ -60,8 +45,7 @@ public class ParticipantRestControllerTest {
 		participant.setLogin("testlogin");
 		participant.setPassword("testpassword");
 
-		given(participantService.findByLogin(participant.getLogin())).willReturn(participant);
-
+	
 		mvc.perform(get("/participants/"+participant.getLogin()).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
 				//.andExpect(content().string(new ObjectMapper().writeValueAsString(participant)));
 		//.andExpect(content().string("{\"login\":\"testlogin\",\"password\":\"testpassword\"}"));
@@ -75,14 +59,7 @@ public class ParticipantRestControllerTest {
 		participant.setPassword("testpassword");
 		String inputJSON = "{\"login\":\"testlogin\", \"password\":\"somepassword\"}";
 
-		given(participantService.findByLogin("testlogin")).willReturn((Participant)null);
-		given(participantService.add(participant)).willReturn(participant);
-		mvc.perform(post("/participants").content(inputJSON).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isCreated());
 		
-		given(participantService.findByLogin("testlogin")).willReturn(participant);
-		mvc.perform(post("/participants").content(inputJSON).contentType(MediaType.APPLICATION_JSON)).andExpect(status().isConflict());
-		
-		verify(participantService, times(2)).findByLogin("testlogin");
 	}
 
 }
