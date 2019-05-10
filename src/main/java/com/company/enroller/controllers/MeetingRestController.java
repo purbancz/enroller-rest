@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.company.enroller.model.Meeting;
@@ -28,8 +29,16 @@ public class MeetingRestController {
 	ParticipantService participantService;
 
 	@RequestMapping(value = "", method = RequestMethod.GET)
-	public ResponseEntity<?> getAll() {
-		Collection<Meeting> meetings = meetingService.getAll();
+	public ResponseEntity<?> findMeetings(@RequestParam(value = "title", defaultValue = "") String title,
+			@RequestParam(value = "description", defaultValue = "") String description,
+			@RequestParam(value = "sort", defaultValue = "") String sortMode,
+			@RequestParam(value = "participantLogin", defaultValue = "") String participantLogin) {
+
+		Participant foundParticipant = null;
+		if (!participantLogin.isEmpty()) {
+			foundParticipant = participantService.findByLogin(participantLogin);
+		}
+		Collection<Meeting> meetings = meetingService.findMeetings(title, description, foundParticipant, sortMode);
 		return new ResponseEntity<Collection<Meeting>>(meetings, HttpStatus.OK);
 	}
 

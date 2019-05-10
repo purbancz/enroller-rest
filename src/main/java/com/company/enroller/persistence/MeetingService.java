@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.company.enroller.exceptions.NoMeetingFoundException;
 import com.company.enroller.model.Meeting;
+import com.company.enroller.model.Participant;
 
 @Component("meetingService")
 public class MeetingService {
@@ -31,6 +32,23 @@ public class MeetingService {
 			throw new NoMeetingFoundException("No meeting with id '" + id + "' was found");
 		}
 		return meeting;
+	}
+
+	public Collection<Meeting> findMeetings(String title, String description, Participant participant, String sortMode) {
+		String hql = "FROM Meeting as meeting WHERE title LIKE :title AND description LIKE :description ";
+		if (participant!=null) {
+			hql += " AND :participant in elements(participants)";
+		}
+		if (sortMode.equals("title")) {
+			hql += " ORDER BY title";
+		}
+		Query query = this.session.createQuery(hql);
+		query.setParameter("title", "%" + title + "%").setParameter("description", "%" + description + "%");
+		if (participant!=null) {
+			query.setParameter("participant", participant);
+		} 
+		
+		return query.list();
 	}
 
 	public void delete(Meeting meeting) {
